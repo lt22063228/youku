@@ -25,34 +25,36 @@ def getVideosByCate():
     # logging 配置
     import logging  
     import os
-    logging.basicConfig(filename = os.path.join(os.getcwd(), 'log.txt'), level = logging.DEBUG)  
 
     sess = session.getSession()
+    allVideos = session.get_all_videos(sess)
+    allUsers = session.get_all_users(sess)
+    print 'allUsers print', ('40447279' in allUsers)
+    print 'allvideos print', ('XMTI2MDQ0NDYzMg==' in allVideos)
     for cate in categories:
         # 所有参数设置在这
         page = 1
         count = 100
         period = 'today'
         # 结束参数设置
+        temp = []
+        print 'haha'
+        req = Request()
+        print 'hehe'
         while True:
-            data = query_videos_by_catetory(count = count, page = page,
+            data = req.query_videos_by_catetory(count = count, page = page,
                                             category = cate,
-                                            period = period,
+                                            period = period
                                             )
-            if 'error' in data:
-                if data['error']['code'] == 1014:
-                    logging.debug('error 1014, maximum matching(page*count)')        
-                else:
-                    
-                    pprint(data)
-                    logging.debug('error'+data['error']['code'])
+            if 'error' in data and data['error']['code'] != 1017:
+                pprint(data)
                 break
             videos = data['videos']
             for video in videos:
-                session.insert_video(video, sess)
+                temp.append(video)
+            session.insert_videos(temp, sess, allVideos, allUsers)
+            if len(videos) < 99: break 
             page += 1
-            print page
-        print page
     sess.close()
 def testGetUserById(userId):
     data = query_user_by_id(user_ids = userId)
@@ -99,13 +101,12 @@ def getVideos():
         print page
     sess.close()
 
-def getCommentsByVideoId(videoId, users, req):
+def getCommentsByVideoId(videoId, users, req, sess):
     page = 1
     count = 100
 
     # logging 配置
     comment_count = 0
-    sess = session.getSession()
     while True:
 
         data = req.query_comments_by_video(video_id = videoId, count = count, page = page)
@@ -130,7 +131,6 @@ def getCommentsByVideoId(videoId, users, req):
         session.insert_comments(comments, sess, users)
         page += 1
     
-    sess.close()
 
 def getCommentsForAllVideos():
     sess = session.getSession()
@@ -139,13 +139,17 @@ def getCommentsForAllVideos():
     users = session.get_all_users(sess)
     sess.close()
     commentedVideoIds = getDistinctCommentedVideoIds()
+    print 'ha'
     req = Request()
+    print 'he'
+    sess = session.getSession()
     for video in videos:
         s = time.time()
-        if video.id not in commentedVideoIds:
-            getCommentsByVideoId(video.id, users, req = req)
+        if video not in commentedVideoIds:
+            getCommentsByVideoId(video, users, req = req, sess = sess)
         f = time.time()
         print 'a video time used is:', f - s
+    sess.close()
 
 def getFavorByUser(userId):
     # 这个方法暂时存在问题，发送过去的请求没法很好被解析，总是返回错误
@@ -183,6 +187,6 @@ if __name__ == '__main__':
 #     testGetVideos()
 #     getVideos()
 #     testGetUserById('99201492,99034753')
-#     getVideosByCate()
-    getCommentsForAllVideos()
+    getVideosByCate()
+#     getCommentsForAllVideos()
         

@@ -42,6 +42,7 @@ class Proxy:
         self.result = []
         self.counter = 0
         for i in range(1, 5):
+            print 'proxy...', i
             realUrl = url + str(i) + '.html'
             html = requests.get(realUrl)
             html = html.text

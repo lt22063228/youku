@@ -50,6 +50,66 @@ def insert_video(video, session):
         originVideo = session.query(Video).filter(Video.id == video['id']).one()
         originVideo.copy(v)
         session.commit()
+        
+def insert_videos(videos, session, videoIdSet, userIdSet):
+
+    userList = []
+    videoList = []    
+    updateList = []
+    for video in videos:
+        
+        v = Video(id = video['id'], title = video['title'], 
+                      link = video['link'], duration = video['duration'],
+                      category = video['category'], view_count = video['view_count'],
+                      favorite_count = video['favorite_count'], comment_count = video['comment_count'],
+                      up_count = video['up_count'], down_count = video['down_count'],
+                      published = video['published'], user = video['user']['id'],
+                      )
+        u = User(id = v.user)
+        
+#         print 'type of userIdSet', type(userIdSet.pop())
+#         print 'type of u.id', u.id, type(u.id)
+        if str(u.id) not in userIdSet:
+            userList.append(u)
+            userIdSet.add(str(u.id))
+
+        if str(v.id) not in videoIdSet:
+            if v.comment_count > 99:
+                videoList.append(v)
+                videoIdSet.add(str(v.id))
+        else:
+            updateList.append(v)
+
+    for each in userList: session.add(each)
+    try:
+        session.commit()
+    except sqlalchemy.exc.IntegrityError as detail:
+        print detail
+        session.rollback()
+    
+    for each in updateList:
+        try:
+            originVideo = session.query(Video).filter(Video.id == video['id']).one()
+        except sqlalchemy.orm.exc.NoResultFound as detail:
+            # 说明不需要更新,因为也是在这轮查询中才插入的
+            continue
+        originVideo.copy(v)
+    try:
+        session.commit()
+    except sqlalchemy.exc.IntegrityError as detail:
+        print detail
+        session.rollback()
+    
+    print 'len of videos', len(videoList)
+    for each in videoList: session.add(each)
+    try:
+        session.commit()
+    except sqlalchemy.exc.IntegrityError as detail:
+        print detail
+        session.rollback()
+
+        
+        
 def insert_comments(comments, session, users):
     '''
         insert_comment 的多个插入版本
@@ -139,8 +199,8 @@ def insert_favor_by_user(video, userId, session):
     
     try:
         session.add(v)
-        session.commit()
     except sqlalchemy.exc.IntegrityError:
+        session.commit()
         # 用户收藏的视频已经在数据库中存在，因此就秩序更新视频信息
         session.rollback()
         originVideo = session.query(Video).filter(Video.id == video['id']).one()
@@ -158,8 +218,8 @@ def insert_favor_by_user(video, userId, session):
         session.rollback()
  
 def get_all_videos(session):
-    res = session.query(Video).all()
-    return res
+    res = session.query(Video.id).all()
+    return set([x[0] for x in res])
 
 def get_all_users(session):
     res = session.query(User.id).all()
