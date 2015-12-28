@@ -41,7 +41,7 @@ class Proxy:
         url = 'http://www.proxy.com.ru/list_'
         self.result = []
         self.counter = 0
-        for i in range(1, 5):
+        for i in range(1, 3):
             print 'proxy...', i
             realUrl = url + str(i) + '.html'
             html = requests.get(realUrl)
@@ -63,14 +63,12 @@ class Proxy:
                 count += 1
           
         self.length = len(self.result)
-#         for ip, port in result:
-#             print ip, port
-#             proxies = {'https': 'http://' + ip + ':' + port}
-#             requests.get('http://www.youku.com', proxies = proxies) 
         
 if __name__ == '__main__':
-    p = Proxy()
-    p.getProxy()
+#     p = Proxy()
+#     p.getProxy()
+    pass
+
     
         
     

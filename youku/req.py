@@ -38,127 +38,93 @@ class Request(object):
         params['page'] = page
         params['count'] = count
         
-        
-        data = {}
-        for i in range(10):
-            try:
-                with eventlet.Timeout(10):
-                    r = requests.get(url, params = params,
-                                    proxies = {'http':self.proxy_address, 'http':self.proxy_address},
-                                    )
-                    break
-            except (eventlet.timeout.Timeout, requests.exceptions.ProxyError,
-                    requests.exceptions.ConnectionError) as detail:
-                self.proxy_address = self.proxy.nextProxy()
-            if i == 9:
-                data['igonre'] = "proxy cannot satisfy"
-
-        # 将返货的list类型的数据转换成dict
-        # ------------------------------------------------------------------------
-        try:
-            data = json.loads(json.dumps(r.json()))
-        except ValueError as detail:
-            # 有些数据返回之后没法解析,这些数据直接跳过
-            data['ignore'] = '1'
-            print detail
-
-        if 'error' in data and data['error']['code'] == 1017:
-            # 如果访问频率超过限制,切换client_id
-            self.client_id = self.client.nextClientId()
-            print 'switching client_id'
-        # ------------------------------------------------------------------------
-        print 'return 3'
-        return data
+        return self.get_data(params, url)
 
     def query_comments_by_video(self,
                                 video_id = None,
                                 page = None,
                                 count = None,
                                 url = 'https://openapi.youku.com/v2/comments/by_video.json'):
-        # ------------------------------------------------------------------------
         params = {}
         params['client_id'] = self.client_id
         params['video_id'] = video_id
         params['page'] = page
         params['count'] = count
-        # ------------------------------------------------------------------------
 
-        # ------------------------------------------------------------------------
-        r = None
-        data = {}
-        self.t = time.time()
-        try:
-            with eventlet.Timeout(10):
-                    r = requests.get(url, params=params, proxies = {'https':self.proxy_address, 'http':self.proxy_address},
-                                     )
-            # 如果访问api的响应时间太慢,说明youku开始封锁ip,选择另外一个代理ip
-        except (eventlet.timeout.Timeout, requests.exceptions.ProxyError,
-                requests.exceptions.ConnectionError) as detail:
-            self.proxy_address = self.proxy.nextProxy()
-            data['ignore'] = '1'
-            return data
-        # ------------------------------------------------------------------------
+        return self.get_data(params, url)
+       
 
-        # ------------------------------------------------------------------------
-        try:
-            data = json.loads(json.dumps(r.json()))
-        except ValueError as detail:
-            # 有些数据返回之后没法解析,这些数据直接跳过
-            data['ignore'] = '1'
-            print detail
-
-        if 'error' in data and data['error']['code'] == 1017:
-            # 如果访问频率超过限制,切换client_id
-            self.client_id = self.client.nextClientId()
-            print 'switching client_id'
-        # ------------------------------------------------------------------------
-        print 'return 3' 
-        return data
     
-    def query_favor_videos_by_user(client_id = '9c5f810f1c6b0bf0',
+    def query_favor_videos_by_user(self,
                                    user_id = None,
                                    page = 1,
                                    count = 1,
-                                   url = 'https://openapi.youku.com/v2/comments/by_video.json'
+                                   url = 'https://openapi.youku.com/v2/videos/favorite/by_user.json'
                                    ):
         params = {}
-        params['client_id'] = client_id
-        if user_id is None:
-            print "!!!!!!!!user_id is NOne, in query_favor_videos_by_user"
-        else:
-    #         params['user_id'] = '10150955269'
-            pass
-    #     params['user_name'] = '谢耳朵33139961'
-    #     params['page'] = page
-    #     params['count'] = count
-        r = requests.get(url, params = params)
-        data = {}
-        try:
-            data = json.loads(json.dumps(r.json()))
-        except ValueError as detail:
-            data['error'] = r.text.split(' ')
-        return data
-    
-    def query_user_by_id(client_id = '9c5f810f1c6b0bf0',
+        params['page'] = 1
+        params['count'] = 1
+#         params[]
+        
+        return self.get_data(params, url)
+
+    def query_user_by_id(self, client_id = '9c5f810f1c6b0bf0',
                          user_ids = None,
-                         url = 'https://openapi.youku.com/v2/comments/by_video.json'
+                         url = 'https://openapi.youku.com/v2/users/show_batch.json'
                          ):
         params = {}
         params['client_id'] = client_id
-        if user_ids is None:
-            print "!!!!1user_ids is None, in query_user_by_id"
-        else:
-            params['user_ids'] = user_ids
-        r = requests.get(url, params = params)
+        params['user_ids'] = user_ids
+        return self.get_data(params, url)
+    
+    def query_a_user_by_id(self, client_id = '9c5f810f1c6b0bf0',
+                         user_id = None,
+                         url = 'https://openapi.youku.com/v2/users/show.json'
+                         ):
+        params = {}
+        params['client_id'] = client_id
+        params['user_id'] = user_id
+        return self.get_data(params, url)
+    
+    def get_data(self, params, url):
+        r = None
         data = {}
-        try:
-            data = json.loads(json.dumps(r.json()))
-        except ValueError as detail:
-            data['error'] = r.text.split(' ')
-        return data
+        self.t = time.time()
+        params['client_id'] = self.client_id
+        while True:
+            try:
+                with eventlet.Timeout(10):
+                        r = requests.get(url, params=params, proxies = {'https':self.proxy_address, 'http':self.proxy_address})
+                        # 成功请求到数据,则无需重试
+                        try:
+                            data = json.loads(json.dumps(r.json()))
+                        except ValueError as detail:
+                            # 有些数据返回之后没法解析,这些数据直接跳过
+                            data = r.text.split(' ')
+                            print 'in get_data, req module'
+                            print data
+                            break
+                        if 'error' in data and data['error']['code'] == 1017:
+                            # 如果访问频率超过限制,切换client_id
+                            self.client_id = self.client.nextClientId()
+                            params['client_id'] = self.client_id
+                            print 'switching client_id', self.client_id
+                            continue
+                        return data
+                # 如果访问api的响应时间太慢,说明youku开始封锁ip,选择另外一个代理ip
+            except (eventlet.timeout.Timeout, requests.exceptions.ProxyError,
+                    requests.exceptions.ConnectionError) as detail:
+                self.proxy_address = self.proxy.nextProxy()
+            except Exception as detail:
+                self.proxy_address = self.proxy.nextProxy()
+                print 'get wrong, try again.'
+                print detail
     
+if __name__ == '__main__':
+    req = Request()
+    print req.query_a_user_by_id(user_id = '10000010')
     
-    
+         
     
     
     

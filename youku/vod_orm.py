@@ -25,6 +25,7 @@ class Video(Base):
     up_count = Column(Integer)
     down_count = Column(Integer)
     published = Column(DateTime)
+    genre = Column(String(60))
     # 上传视频的用户id
     user = Column(String(60), ForeignKey('user.id'))
     favorite_time = Column(DateTime)
@@ -62,9 +63,57 @@ class User(Base):
     statuses_count = Column(Integer)
     vv_count = Column(Integer)
     regist_time = Column(DateTime)
+    
+    def copy(self, user):
+        self.id              = user.id
+        self.name            = user.name
+        self.link            = user.link
+        self.gender          = user.gender
+        self.description     = user.description
+        self.videos_count    = user.videos_count
+        self.playlist_count  = user.playlist_count
+        self.favorites_count = user.favorites_count
+        self.followers_count = user.followers_count
+        self.following_count = user.following_count
+        self.statuses_count  = user.statuses_count
+        self.vv_count        = user.vv_count
+        self.regist_time     = user.regist_time
 
     def __repr__(self):
         return "<user %s %s>" % (self.id, self.name)
+class ActiveUser(Base):
+    __tablename__ = 'active_user'
+    id = Column(String(60), primary_key = True)
+    name = Column(String(60))
+    link = Column(String(60))
+    gender = Column(String(60))
+    description = Column(String(200))
+    videos_count = Column(Integer)
+    playlist_count = Column(Integer)
+    favorites_count = Column(Integer)
+    followers_count = Column(Integer)
+    following_count = Column(Integer)
+    statuses_count = Column(Integer)
+    vv_count = Column(Integer)
+    regist_time = Column(DateTime)
+    
+    def copy(self, user):
+        self.id              = user.id
+        self.name            = user.name
+        self.link            = user.link
+        self.gender          = user.gender
+        self.description     = user.description
+        self.videos_count    = user.videos_count
+        self.playlist_count  = user.playlist_count
+        self.favorites_count = user.favorites_count
+        self.followers_count = user.followers_count
+        self.following_count = user.following_count
+        self.statuses_count  = user.statuses_count
+        self.vv_count        = user.vv_count
+        self.regist_time     = user.regist_time
+
+    
+ 
 
 class Comment(Base):
     __tablename__ = 'comment'
