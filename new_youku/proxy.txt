@@ -1,0 +1,24 @@
+INFO:urllib3.connectionpool:Starting new HTTP connection (1): www.proxy.com.ru
+DEBUG:urllib3.connectionpool:Setting read timeout to None
+DEBUG:urllib3.connectionpool:"GET /list_1.html HTTP/1.1" 200 None
+INFO:urllib3.connectionpool:Starting new HTTP connection (1): www.proxy.com.ru
+DEBUG:urllib3.connectionpool:Setting read timeout to None
+DEBUG:urllib3.connectionpool:"GET /list_2.html HTTP/1.1" 200 None
+INFO:urllib3.connectionpool:Starting new HTTP connection (1): www.proxy.com.ru
+DEBUG:urllib3.connectionpool:Setting read timeout to None
+DEBUG:urllib3.connectionpool:"GET /list_3.html HTTP/1.1" 200 None
+INFO:urllib3.connectionpool:Starting new HTTP connection (1): www.proxy.com.ru
+DEBUG:urllib3.connectionpool:Setting read timeout to None
+DEBUG:urllib3.connectionpool:"GET /list_4.html HTTP/1.1" 200 None
+INFO:urllib3.connectionpool:Starting new HTTP connection (1): www.proxy.com.ru
+DEBUG:urllib3.connectionpool:Setting read timeout to None
+DEBUG:urllib3.connectionpool:"GET /list_5.html HTTP/1.1" 200 None
+INFO:urllib3.connectionpool:Starting new HTTP connection (1): www.proxy.com.ru
+DEBUG:urllib3.connectionpool:Setting read timeout to None
+DEBUG:urllib3.connectionpool:"GET /list_6.html HTTP/1.1" 200 None
+INFO:urllib3.connectionpool:Starting new HTTP connection (1): www.proxy.com.ru
+DEBUG:urllib3.connectionpool:Setting read timeout to None
+DEBUG:urllib3.connectionpool:"GET /list_7.html HTTP/1.1" 200 None
+INFO:urllib3.connectionpool:Starting new HTTP connection (1): 111.13.12.216
+DEBUG:urllib3.connectionpool:Setting read timeout to None
+DEBUG:urllib3.connectionpool:"GET http://www.baidu.com/ HTTP/1.1" 200 21967
